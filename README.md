@@ -5,7 +5,6 @@ Download questionaire data from Credamo platform.
 
 ```bash
 pip install playwright
-playwright install chromium
 ```
 
 ## 运行
