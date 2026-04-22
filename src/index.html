@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credamo 数据下载器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Credamo 数据下载器</h1>
+            <p class="subtitle">从 Credamo 问卷平台下载数据</p>
+        </header>
+
+        <main>
+            <div class="instructions">
+                <span class="icon">📋</span>
+                <span>步骤：F12 → Application → Cookies → 全选(Ctrl+A) → 复制 → 粘贴下方 → 输入问卷ID → 点下载</span>
+            </div>
+
+            <div class="form-group">
+                <label for="cookie-input">粘贴 Cookie 内容</label>
+                <textarea id="cookie-input" placeholder="从浏览器复制 Cookie 后粘贴到这里..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="survey-id">问卷ID</label>
+                <div class="input-row">
+                    <input type="text" id="survey-id" placeholder="请输入问卷ID（纯数字）" value="31273164362">
+                    <span class="hint">纯数字</span>
+                </div>
+            </div>
+
+            <button id="download-btn" class="btn-primary">
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">开始下载</span>
+            </button>
+
+            <div class="progress-container" id="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="progress-text" id="progress-text">下载中...</span>
+            </div>
+
+            <div class="log-container">
+                <div class="log-header">
+                    <span>运行日志</span>
+                    <button id="clear-log" class="btn-small">清空</button>
+                </div>
+                <div id="log-output" class="log-output"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Credamo Data Downloader v1.0</p>
+        </footer>
+    </div>
+
+    <script src="main.js" type="module"></script>
+</body>
+</html>
