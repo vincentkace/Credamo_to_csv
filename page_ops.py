@@ -41,7 +41,7 @@ def go_to_data_clean_page(page):
         return
 
     try:
-        page.locator("text=数据清理").click()
+        page.locator("text=数据").first.click()
         time.sleep(2)
     except Exception as e:
         print(f"进入数据清理页面失败: {e}")

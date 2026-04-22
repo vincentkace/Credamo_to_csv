@@ -64,7 +64,7 @@ def get_surveyId(browser):
         try:
             browser.find_element_by_class_name("iconfont icon-shaixuan")
         except:
-            browser.find_element_by_link_text("数据清理").click()
+            browser.find_element_by_link_text("数据").click()
             time.sleep(3)
     
     return int(surveyId)
@@ -108,7 +108,7 @@ def go_to_page(browser,page):
 
 def set_encoding(browser):
     time.sleep(1)
-    browser.find_element_by_link_text("数据清理").click()
+    browser.find_element_by_link_text("数据").click()
     time.sleep(2)
     # delete some click that cause bugs 20231210
     # browser.find_element_by_xpath("/html/body/div[@id='survey_bg']/div[4]/div[1]/div[@class='route']/div[@class='button2']").click()

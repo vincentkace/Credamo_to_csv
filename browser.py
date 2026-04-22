@@ -106,41 +106,27 @@ def launch_browser(connect_existing=False):
         # 连接已启动的Chrome（开发者模式）
         browser = p.chromium.connect_over_cdp("http://localhost:9222")
 
-        # CDP连接需要通过context来获取页面
-        # 获取第一个context（通常CDP连接只有一个context）
-        if browser.contexts:
-            context = browser.contexts[0]
-            all_pages = context.pages
-        else:
-            context = browser.new_context()
-            all_pages = []
+        # 遍历所有context和页面，找Credamo的
+        page = None
+        credamo_page = None
 
-        credamo_pages = []
-        focused_page = None
+        for ctx in browser.contexts:
+            for p in ctx.pages:
+                url = p.url if hasattr(p, 'url') else ""
+                if "credamo.com" in url:
+                    credamo_page = p
+                    break
+            if credamo_page:
+                break
 
-        # 遍历所有页面找Credamo
-        for page in all_pages:
-            if "credamo.com" in page.url:
-                try:
-                    is_visible = page.evaluate("() => document.visibilityState === 'visible'")
-                    if is_visible:
-                        focused_page = page
-                        break
-                except:
-                    pass
-                credamo_pages.append(page)
-
-        if not focused_page:
-            if credamo_pages:
-                focused_page = credamo_pages[0]
-            elif all_pages:
-                # 没有Credamo页面，使用第一个页面
-                focused_page = all_pages[0]
+        # 如果有Credamo页面就用，否则用第一个
+        page = credamo_page
+        if not page:
+            if browser.contexts and browser.contexts[0].pages:
+                page = browser.contexts[0].pages[0]
             else:
-                # 没有页面，创建新的
-                focused_page = context.new_page()
-
-        page = focused_page
+                ctx = browser.new_context()
+                page = ctx.new_page()
     else:
         # 启动新的Chrome
         context = p.chromium.launch_persistent_context(

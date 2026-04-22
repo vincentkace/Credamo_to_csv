@@ -12,8 +12,7 @@ from page_ops import (
 from gui import create_gui
 
 def main():
-    # # 判断模式：是否有 --connect 参数
-    # connect_existing = "--connect" in sys.argv
+    connect_existing = True
 
     # if connect_existing:
     #     print("=== 开发者模式：连接已有Chrome ===")
@@ -21,10 +20,16 @@ def main():
     #     print("然后在Chrome中手动登录Credamo并打开项目\n")
     # else:
     #     print("=== 正常模式：启动新Chrome ===\n")
-    connect_existing = True
+
 
     # 启动浏览器
-    p, browser, context, page = launch_browser(connect_existing=connect_existing)
+    try:
+        p, browser, context, page = launch_browser(connect_existing=connect_existing)
+    except Exception as e:
+        print(e)
+        print(r'请先手动启动Chrome(需要修改user data为你电脑的某一个固定的路径): "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-blink-features=AutomationControlled --disable-infobars --user-data-dir="C:\Users\k8723\work\CredamoDataDownloader\Credamo_to_csv\browser_data"')
+        print("然后再启动本代码python main.py\n")
+        exit()
 
     if not connect_existing:
         # 只有非连接模式才需要自动打开网站
@@ -66,11 +71,11 @@ def main():
 
         # 下载数据
         filename = gui_vars['download_name'].get("0.0", "end").strip()
-        filename = f"{filename}_{time.strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"{filename}_{time.strftime('%Y%m%d_%H%M%S')}.csv"
 
         try:
             df = download_all_data(cookie_str, survey_id, page_size=10)
-            df.to_excel(filename)
+            df.to_csv(filename, encoding='utf-8', index=False)
             gui_vars['show_info'](f"数据已保存到: {filename}")
         except Exception as e:
             gui_vars['show_info'](f"下载失败: {e}")
@@ -212,8 +217,8 @@ def main():
     })
 
     def on_closing():
-        browser.close()
-        p.stop()
+        # browser.close()
+        # p.stop()
         window.destroy()
 
     window.protocol("WM_DELETE_WINDOW", on_closing)
