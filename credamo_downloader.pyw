@@ -4,29 +4,60 @@ from datetime import datetime
 
 requests.packages.urllib3.disable_warnings()
 
+FIELD_NAME_MAP = {
+    "answerSign": "答案ID",
+    "userSign": "用户ID",
+    "answerStartTime": "开始时间",
+    "answerEndTime": "结束时间",
+    "answerTime": "耗时(秒)",
+    "sourceType": "答题渠道",
+    "dispenseId": "发布ID",
+    "dispenseName": "发布名称",
+    "fromIp": "IP地址",
+    "lng": "经度",
+    "lat": "纬度",
+    "country": "国家",
+    "province": "省份",
+    "city": "城市",
+    "deviceType": "设备类型",
+    "osType": "操作系统",
+    "browserType": "浏览器",
+    "resolution": "屏幕分辨率",
+    "randomElements": "随机元素",
+    "userId": "用户ID",
+    "answerId": "答案ID",
+    "status": "状态",
+}
+
 def parse_cookies(text):
-    """🔧 强力整理Cookie：兼容Chrome表格复制、key=value格式"""
     cookies = {}
     for line in text.splitlines():
         line = line.strip()
         if not line or line.lower().startswith('name'):
             continue
-        # 处理制表符分隔的表格格式 (Name \t Value \t Domain...)
         if '\t' in line:
             parts = line.split('\t')
             if len(parts) >= 2:
                 name, val = parts[0].strip(), parts[1].strip()
                 if name and val:
                     cookies[name] = val
-        # 兼容 key=value 格式
         elif '=' in line and ':' not in line.split('=')[0]:
             k, v = line.split('=', 1)
             if k.strip() and v.strip():
                 cookies[k.strip()] = v.strip()
     return cookies
 
+def get_field_name(h):
+    field_id = h.get("id", "")
+    question_name = h.get("questionName", "")
+    
+    if field_id in FIELD_NAME_MAP:
+        return FIELD_NAME_MAP[field_id]
+    if question_name:
+        return question_name
+    return field_id
+
 def download_worker(headers, sid, log_callback):
-    """📥 后台下载任务"""
     all_data, page, total = [], 1, 0
     base_url = "https://www.credamo.com/v1/cleanVar/dataOverview"
     
@@ -81,14 +112,13 @@ def download_worker(headers, sid, log_callback):
     return all_data
 
 def save_csv(data, filename, log_callback):
-    """💾 保存CSV（已修复语法错误）"""
     if not data:
         log_callback("❌ 无数据可保存")
         return False
     
     try:
         header_info = data[0].get("header", [])
-        cols = ["userId", "answerId", "status"] + [h.get("questionName", h.get("id", "")) for h in header_info]
+        cols = ["userId", "answerId", "status"] + [get_field_name(h) for h in header_info]
         
         with open(filename, "w", newline="", encoding="utf-8-sig") as f:
             writer = csv.writer(f)
@@ -110,12 +140,10 @@ def run():
     cookie_text = txt_cookie.get("1.0", tk.END).strip()
     survey_id = entry_id.get().strip()
     
-    # 清空日志
     log.config(state='normal')
     log.delete("1.0", tk.END)
     log.config(state='disabled')
     
-    # 线程安全的日志写入
     def log_msg(msg):
         def _update():
             log.config(state='normal')
@@ -184,21 +212,17 @@ def cleanup():
     progress.stop()
     btn.config(state='normal', text='🚀 下载')
 
-# ================= GUI 界面 =================
 root = tk.Tk()
 root.title("Credamo 数据下载工具")
 root.geometry("700x650")
 
-# 说明栏
 tk.Label(root, text="📋 步骤：F12→Application→Cookies→全选(Ctrl+A)→复制→粘贴下方→输入问卷ID→点下载", 
          bg="#e3f2fd", pady=8, font=("Microsoft YaHei", 9)).pack(fill=tk.X)
 
-# Cookie输入区
 tk.Label(root, text="粘贴 Cookie 内容:", font=("Microsoft YaHei", 9, "bold")).pack(anchor="w", padx=10, pady=(10,5))
 txt_cookie = scrolledtext.ScrolledText(root, height=8, font=("Consolas", 9))
 txt_cookie.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
-# 问卷ID输入区
 id_frame = tk.Frame(root)
 id_frame.pack(fill=tk.X, padx=10, pady=5)
 tk.Label(id_frame, text="问卷ID:", font=("Microsoft YaHei", 10)).pack(side=tk.LEFT, padx=(0,10))
@@ -207,17 +231,14 @@ entry_id.pack(side=tk.LEFT)
 entry_id.insert(0, "31273164362")
 tk.Label(id_frame, text="（纯数字）", fg="gray").pack(side=tk.LEFT, padx=(10,0))
 
-# 下载按钮
 btn = tk.Button(root, text="🚀 下载", command=run, bg="#4CAF50", fg="white", 
                 font=("Microsoft YaHei", 12, "bold"), pady=10)
 btn.pack(fill=tk.X, padx=10, pady=10)
 
-# 进度条
 tk.Label(root, text="进度:", font=("Microsoft YaHei", 9)).pack(anchor="w", padx=10)
 progress = ttk.Progressbar(root, mode='indeterminate', length=400)
 progress.pack(fill=tk.X, padx=10, pady=5)
 
-# 日志窗口
 tk.Label(root, text="运行日志:", font=("Microsoft YaHei", 9, "bold")).pack(anchor="w", padx=10, pady=(10,5))
 log = scrolledtext.ScrolledText(root, height=12, font=("Consolas", 8), state='disabled', bg="#f5f5f5")
 log.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
