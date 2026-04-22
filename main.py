@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 
 from browser import launch_browser, get_cookies, is_logged_in
-from api import get_page_df, download_all_data, save_to_file
+from api import get_page_df, download_all_data
 from page_ops import (
     get_survey_id, go_to_data_clean_page, set_page_size,
     go_to_page, select_user, batch_reject, batch_accept
@@ -12,15 +12,16 @@ from page_ops import (
 from gui import create_gui
 
 def main():
-    # 判断模式：是否有 --connect 参数
-    connect_existing = "--connect" in sys.argv
+    # # 判断模式：是否有 --connect 参数
+    # connect_existing = "--connect" in sys.argv
 
-    if connect_existing:
-        print("=== 开发者模式：连接已有Chrome ===")
-        print("请先手动启动Chrome: chrome --remote-debugging-port=9222")
-        print("然后在Chrome中手动登录Credamo并打开项目\n")
-    else:
-        print("=== 正常模式：启动新Chrome ===\n")
+    # if connect_existing:
+    #     print("=== 开发者模式：连接已有Chrome ===")
+    #     print("请先手动启动Chrome: chrome --remote-debugging-port=9222")
+    #     print("然后在Chrome中手动登录Credamo并打开项目\n")
+    # else:
+    #     print("=== 正常模式：启动新Chrome ===\n")
+    connect_existing = True
 
     # 启动浏览器
     p, browser, context, page = launch_browser(connect_existing=connect_existing)
@@ -65,11 +66,11 @@ def main():
 
         # 下载数据
         filename = gui_vars['download_name'].get("0.0", "end").strip()
-        filename = f"{filename}_{time.strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"{filename}_{time.strftime('%Y%m%d_%H%M%S')}.xlsx"
 
         try:
             df = download_all_data(cookie_str, survey_id, page_size=10)
-            save_to_file(df, filename)
+            df.to_excel(filename)
             gui_vars['show_info'](f"数据已保存到: {filename}")
         except Exception as e:
             gui_vars['show_info'](f"下载失败: {e}")
