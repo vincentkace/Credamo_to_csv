@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-from config import load_config, save_config, BROWSER_PATHS
-from datetime import datetime
+from tkinter import ttk
+from config import load_config
 
 def create_gui(callbacks):
     window = tk.Tk()

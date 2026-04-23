@@ -1,6 +1,5 @@
 import requests
 import pandas as pd
-import json
 
 def get_page_df(cookie_str, survey_id, page_size, page_num, download=False):
     """获取单页问卷数据
