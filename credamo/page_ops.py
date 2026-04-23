@@ -33,18 +33,53 @@ def is_data_clean_page(page):
         return False
 
 
-def go_to_data_clean_page(page):
-    """如果没有在数据清理页面，点击进入"""
-    # 先检查是否已经在数据清理页面
+def go_to_data_clean_page(page, survey_id=None):
+    """如果没有在数据清理页面，跳转到dataClean页面
+
+    Args:
+        page: Playwright page对象
+        survey_id: 问卷ID，如果提供则直接通过URL跳转
+    """
+    current_url = page.url
+
+    if "#/dataClean" in current_url:
+        print("已在数据清理页面")
+        return True
+
+    if survey_id and f"surveyId={survey_id}" in current_url:
+        try:
+            print(f"通过JS修改hash跳转到dataClean")
+            page.evaluate("window.location.hash = '#/dataClean'")
+            time.sleep(3)
+            if is_data_clean_page(page):
+                return True
+        except Exception as e:
+            print(f"JS hash跳转失败: {e}")
+
+    if survey_id:
+        target_url = f"https://www.credamo.com/survey.html?surveyId={survey_id}#/dataClean"
+        try:
+            print(f"跳转到数据清理页面: {target_url}")
+            page.goto(target_url)
+            time.sleep(3)
+            if is_data_clean_page(page):
+                return True
+        except Exception as e:
+            print(f"URL跳转失败: {e}")
+
     if is_data_clean_page(page):
         print("已在数据清理页面")
-        return
+        return True
 
     try:
         page.locator("text=数据").first.click()
         time.sleep(2)
+        if is_data_clean_page(page):
+            return True
     except Exception as e:
-        print(f"进入数据清理页面失败: {e}")
+        print(f"点击进入数据清理页面失败: {e}")
+
+    return False
 
 
 def set_page_size(page, page_size):
